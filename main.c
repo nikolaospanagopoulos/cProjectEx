@@ -23,13 +23,8 @@ int main(int argc, char *argv[]) {
     scanf("%d", &choice);
 
     if (choice == 6) {
-      while (studentList->head) {
-        node cur = studentList->head->next;
-        free(studentList->head);
-        studentList->head = cur;
-      }
+      break;
     }
-    break;
 
     student st;
     unsigned long id;
@@ -87,6 +82,18 @@ int main(int argc, char *argv[]) {
   }
 
   res = save(filename, studentList);
+
+  // free memory of nodes
+  while (studentList->head) {
+    node cur = studentList->head->next;
+    free(studentList->head);
+    studentList->head = cur;
+  }
+  // free list memory
+  if (studentList) {
+    free(studentList);
+  }
+
   if (isError(res)) {
     printf("Error saving file.\n");
   }

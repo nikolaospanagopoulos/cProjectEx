@@ -27,7 +27,7 @@ Result load(char *filename, list *l) {
 
   // If the file doesn't exist, create it and initialize an empty list
   if (file == NULL) {
-    *l = malloc(sizeof(struct listR)); // Correct memory allocation
+    *l = malloc(sizeof(struct listR));
     if (*l == NULL)
       return MALLOC_ERR;
     (*l)->head = NULL;
@@ -43,12 +43,13 @@ Result load(char *filename, list *l) {
   }
 
   // If the file exists, read its contents into the list
-  *l = malloc(sizeof(struct listR)); // Correct memory allocation
+  *l = malloc(sizeof(struct listR));
   if (*l == NULL)
     return MALLOC_ERR;
   (*l)->head = NULL;
   (*l)->tail = NULL;
 
+  // add the read students from the file to the student list
   student st;
   while (fread(&st, sizeof(student), 1, file)) {
     addStudent(st, *l);
@@ -98,6 +99,7 @@ Result addStudent(student st, list l) {
 Result findStudentNode(unsigned long id, list l, node *np) {
   node current = l->head;
   while (current != NULL) {
+    // go through the list to find student with matching id
     if (current->data.id == id) {
       *np = current;
       return NO_ERR;
