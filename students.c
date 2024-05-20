@@ -17,7 +17,7 @@ void printStudents(list l) {
   node current = l->head;
 
   while (current) {
-    printStudent(l->head->data);
+    printStudent(current->data);
     current = current->next;
   }
 }

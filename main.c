@@ -34,6 +34,7 @@ int main(int argc, char *argv[]) {
       scanf("%s", st.name);
       st.id = generateId();
       res = addStudent(st, studentList);
+
       if (isError(res)) {
         printf("Error adding student.\n");
       }
@@ -69,7 +70,7 @@ int main(int argc, char *argv[]) {
         scanf("%s", st.name);
         res = updateStudent(st, studentList);
         if (isError(res)) {
-          printf("Error updating student.\n");
+          printf("1\n");
         }
       }
       break;
