@@ -4,11 +4,15 @@
 
 int main(int argc, char *argv[]) {
   if (argc != 2) {
+    // ελέγχουμε αν οι παράμετροι που περνάμε στο πρόγραμμα ειναι 2 (executable
+    // και όνομα αρχείου)
     printf("Usage: %s <filename>\n", argv[0]);
     return 1;
   }
 
+  // παίρνουμε το όνομα του αρχείου από τις παραμέτρους του προγράμματος
   char *filename = argv[1];
+  // δημιουργούμε μια list που θα γεμίσουμε ανοίγοντας το αρχείο
   list studentList;
   Result res = load(filename, &studentList);
   if (isError(res)) {
@@ -16,10 +20,12 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
+  // Επιλογές χρήστη
   int choice;
   while (1) {
     printMenu();
     printf("Enter choice: ");
+    // βάζουμε την επιλογή του χρήστη στο choice
     scanf("%d", &choice);
 
     if (choice == 6) {
@@ -30,6 +36,7 @@ int main(int argc, char *argv[]) {
     unsigned long id;
     switch (choice) {
     case 1:
+      // περίπτωση 1: προσθήκη μαθητή στη λίστα
       printf("Enter student name: ");
       scanf("%s", st.name);
       st.id = generateId();
@@ -40,6 +47,7 @@ int main(int argc, char *argv[]) {
       }
       break;
     case 2:
+      // περίπτωση 2: διαγραφή μαθητή από τη λίστα
       printf("Enter student ID to delete: ");
       scanf("%lu", &id);
       res = deleteStudentById(id, studentList);
@@ -48,6 +56,7 @@ int main(int argc, char *argv[]) {
       }
       break;
     case 3:
+      // περίπτωση 3: αναζήτηση μαθητή με βάση το id
       printf("Enter student ID to search: ");
       scanf("%lu", &id);
       res = findStudent(id, studentList, &st);
@@ -60,6 +69,7 @@ int main(int argc, char *argv[]) {
       }
       break;
     case 4:
+      // περίπτωση 4: ανανέωση στοιχείων μαθητή
       printf("Enter student ID to update: ");
       scanf("%lu", &id);
       res = findStudent(id, studentList, &st);
@@ -75,6 +85,7 @@ int main(int argc, char *argv[]) {
       }
       break;
     case 5:
+      // περίπτωση 5: εκτύπωση στοιχείων όλων των μαθητών
       printStudents(studentList);
       break;
     default:
@@ -82,15 +93,16 @@ int main(int argc, char *argv[]) {
     }
   }
 
+  // αποθηκεύουμε το αρχείο
   res = save(filename, studentList);
 
-  // free memory of nodes
+  // ελευθερώνουμε τη μνήμη για κάθε node
   while (studentList->head) {
     node cur = studentList->head->next;
     free(studentList->head);
     studentList->head = cur;
   }
-  // free list memory
+  // ελευθερώνουμε τη μνήμη για την λίστα
   if (studentList) {
     free(studentList);
   }

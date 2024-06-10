@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// εκτυπώνουμε το μενού
 void printMenu() {
   printf("1. Add student\n");
   printf("2. Delete student by ID\n");
@@ -25,85 +26,96 @@ void printStudents(list l) {
 Result load(char *filename, list *l) {
   FILE *file = fopen(filename, "rb");
 
-  // If the file doesn't exist, create it and initialize an empty list
+  // Άν το αρχείο δεν υπάρχει, το φτιάχνουμε και φτιάχνουμε μία άδεια λίστα
   if (file == NULL) {
     *l = malloc(sizeof(struct listR));
-    if (*l == NULL)
+    if (*l == NULL) {
       return MALLOC_ERR;
+    }
     (*l)->head = NULL;
     (*l)->tail = NULL;
 
-    // Create the file in write mode to ensure it exists
+    // φτιάχνουμε το αρχείο και ελέγχουμε οτι υπάρχει
     file = fopen(filename, "wb");
-    if (file == NULL)
+    if (file == NULL) {
       return F_WRITE_ERR;
+    }
+    // κλείνουμε το αρχείο γιατί ειναι ´αδειο
     fclose(file);
 
     return NO_ERR;
   }
 
-  // If the file exists, read its contents into the list
+  // άν το αρχείο υπάρχει, φτιάχνουμε μια λίστα
   *l = malloc(sizeof(struct listR));
-  if (*l == NULL)
+  if (*l == NULL) {
     return MALLOC_ERR;
+  }
   (*l)->head = NULL;
   (*l)->tail = NULL;
 
-  // add the read students from the file to the student list
+  // βάζουμε στη λίστα , τα δεδομένα απο το αρχείο
   student st;
   while (fread(&st, sizeof(student), 1, file)) {
     addStudent(st, *l);
   }
 
+  // κλείνουμε το αρχείο για να ελευθερώσουμε μνήμη
   fclose(file);
   return NO_ERR;
 }
 
 Result save(char *filename, list l) {
   FILE *file = fopen(filename, "wb");
-  // in case we cannot open file
+  // Δείχνουμε error  σε περίπτωση που δεν μπορούμε να δημιουργήσουμε το αρχείο
   if (!file) {
     return F_WRITE_ERR;
   }
+  // προσωρινή μεταβλητή που περιέχει κάθε (student) που γράφουμε στο αρχείο
   node current = l->head;
   while (current) {
     fwrite(&current->data, sizeof(student), 1, file);
     current = current->next;
   }
-  // close file to free memory
+  // κλείνουμε το αρχείο για να ελευθερώσουμε μνήμη
   fclose(file);
   return NO_ERR;
 }
 
 Result addStudent(student st, list l) {
+  // φτιάχνουμε ένα καινούριο node στη λίστα
   node newN = (node)malloc(sizeof(struct nodeR));
   if (!newN) {
     return MALLOC_ERR;
   }
-  // add student to list
+  // βάζουμε στη λίστα τον μαθητή
   newN->data = st;
   newN->next = NULL;
   newN->previous = l->tail;
 
-  // in case tail exists we add it next to it and then newN is the tail
+  // σε περίπτωση που η λίστα δεν είναι άδεια, βάζουμε τον καινούριο μαθητή στο
+  // τέλος και τον κάνουμε το καινούριο tail
   if (l->tail) {
     l->tail->next = newN;
   } else {
-    // means list was empty so the head is the newN
+    // η λίστα ήταν άδεια και ο μαθητής είναι πλέον και το head και το tail της
+    // λίστας
     l->head = newN;
   }
-  // the newN is the tail
   l->tail = newN;
   return NO_ERR;
 }
 Result findStudentNode(unsigned long id, list l, node *np) {
+  // προσωρινή μεταβλητή
   node current = l->head;
   while (current != NULL) {
-    // go through the list to find student with matching id
+    // ελέγχουμε κάθε μαθητή στη λίστα μέχρι να βρούμε αυτόν που το id του
+    // ταιριάζει σε αυτό που περάσαμε στο function σαν όρισμα
     if (current->data.id == id) {
       *np = current;
       return NO_ERR;
     }
+    // το current δείχνει πλέον στον επόμενο μαθητή
     current = current->next;
   }
   if (!*np) {
@@ -114,33 +126,47 @@ Result findStudentNode(unsigned long id, list l, node *np) {
 }
 
 Result findStudent(unsigned long id, list l, student *st) {
+  // μεταβλητή που θα περιέχει το node που περιέχει τον μαθητή που ψάχνουμε
   node np;
   Result res = findStudentNode(id, l, &np);
   if (res != NO_ERR)
     return res;
   if (np != NULL) {
+    // βάζουμε στο όρισμα sp τον μαθητή που υπάρχει μέσα στο np node
     *st = np->data;
   } else {
+    // σε περίπτωση που δεν τον βρούμε, βάζουμε το -1 σαν id
     st->id = -1;
   }
   return NO_ERR;
 }
 Result deleteStudentById(unsigned long id, list l) {
+  // node που θα περιέχει το student που θέλουμε να διαγράψουμε
   node np;
+  // βρίσκουμε το σωστό node και το βάζουμε στο np
   Result res = findStudentNode(id, l, &np);
   if (res != NO_ERR)
     return res;
   if (np != NULL) {
     if (np->previous != NULL) {
+      // αν υπάρχει προηγούμενο node
+      // κάνουμε το προηγούμενο node στη λίστα να δείχνει στο επόμενο ( μετά απο
+      // αυτό που θέλουμε να διαγράψουμε )
       np->previous->next = np->next;
     } else {
+      // σε περίπτωση που δεν υπάρχει προηγούμενο node , τοτε το head της λίστας
+      // απλά δείχνει στο επόμενο
+      // από αυτό που θέλουμε να διαγράψουμε
       l->head = np->next;
     }
     if (np->next != NULL) {
+      // αν υπάρχει επόμενο τότε το προηγούμενο του επομένου δείχνει στο
+      // προηγούμενο από αυτό που θέλουμε να διαγράψουμε
       np->next->previous = np->previous;
     } else {
       l->tail = np->previous;
     }
+    // ελευθερώνουμε μνήμη
     free(np);
   } else {
     printf("student doesn't exist with id: %lu \n", id);
@@ -148,19 +174,22 @@ Result deleteStudentById(unsigned long id, list l) {
   return NO_ERR;
 }
 Result updateStudent(student st, list l) {
+  // node που θα περιέχει τον μαθητή που θέλουμε να κάνουμε update
   node np;
   Result res = findStudentNode(st.id, l, &np);
   if (res != NO_ERR)
     return res;
   if (np != NULL) {
+    // το node που βρήκαμε πλέον θα περιέχει τον μαθητή που περνάμε σαν όρισμα
+    // στη συνάρτηση
     np->data = st;
   } else {
     return SYNTAX_ERR;
   }
   return NO_ERR;
 }
-// Function to check if there was an error
+// συνάρτηση που ελέγχει αν το Result r είναι error ή όχι
 int isError(Result r) { return r != NO_ERR; }
 
-// Function to generate a pseudo-random and unique ID
+// συνάρτηση που δημιουργεί ενα "τυχαίο" id
 unsigned long generateId() { return (unsigned long)rand(); }
